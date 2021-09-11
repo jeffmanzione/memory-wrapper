@@ -18,7 +18,7 @@ struct __Entry {
   _Entry *prev, *next;
 };
 
-#define pos(hval, num_probes, table_sz)                                        \
+#define pos(hval, num_probes, table_sz) \
   (((hval) + ((num_probes) * (num_probes))) % (table_sz))
 #define calculate_new_size(current_sz) (((current_sz)*2) + 1)
 #define calculate_thresh(table_sz) ((int)((table_sz) / 2.f))
@@ -225,7 +225,7 @@ void map_iterate(const Map *map, PairAction action) {
   }
 }
 
-inline uint32_t map_size(const Map *map) { return map->num_entries; }
+uint32_t map_size(const Map *map) { return map->num_entries; }
 
 void _resize_table(Map *map) {
   ASSERT(NOT_NULL(map));
@@ -254,32 +254,32 @@ void _resize_table(Map *map) {
   map->entries_thresh = calculate_thresh(new_table_sz);
 }
 
-inline void inc(M_iter *iter) {
+void inc(M_iter *iter) {
   ASSERT(NOT_NULL(iter), NOT_NULL(iter->__entry));
   iter->__entry = iter->__entry->next;
 }
 
-inline bool has(M_iter *iter) {
+bool has(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return NULL != iter->__entry;
 }
 
-inline Pair *pair(M_iter *iter) {
+Pair *pair(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return (NULL == iter->__entry) ? NULL : &iter->__entry->pair;
 }
 
-inline const void *key(M_iter *iter) {
+const void *key(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return (NULL == iter->__entry) ? NULL : iter->__entry->pair.key;
 }
 
-inline void *value(M_iter *iter) {
+void *value(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return (NULL == iter->__entry) ? NULL : iter->__entry->pair.value;
 }
 
-inline M_iter map_iter(Map *map) {
+M_iter map_iter(Map *map) {
   ASSERT(NOT_NULL(map));
   M_iter iter = {.__entry = map->first};
   return iter;
