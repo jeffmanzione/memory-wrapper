@@ -5,7 +5,7 @@
 //
 // This header provides functions for debugging and throwing fatal errors.
 //
-// These macros (with the exception of ERROR()), only have an effect when DEBUG
+// These macros (with the exception of FATALF()), only have an effect when DEBUG
 // is defined. If DEBUG is not defined, then usages of these headers generally
 // discarded in preprocessing.
 
@@ -26,32 +26,33 @@
 //   DEBUGF("Oh no, value=%d.", value);
 #ifdef DEBUG
 
-#define DEBUGF(fmt, ...) \
+#define DEBUGF(fmt, ...)                                                       \
   __debugf(__LINE__, __func__, __FILE__, fmt, ##__VA_ARGS__)
 
 #else
 
-#define DEBUGF(fmt, ...) \
-  do {                   \
+#define DEBUGF(fmt, ...)                                                       \
+  do {                                                                         \
   } while (0)
 
 #endif
 
-// ERROR(fmt, ...)
+// FATALF(fmt, ...)
 //
 // Fatally terminates the program after writing the specified formatted message
 // to stderr.
 //
 // Usage:
-//   ERROR("Oh no fatal error, value=%d.", value);
-#define ERROR(fmt, ...)                                                   \
-  do {                                                                    \
-    if (__NEST_DEBUG) {                                                   \
-      __error_nest(__LINE__, __func__, __FILE__, __LINE_NUM, __FUNC_NAME, \
-                   __FILE_NAME, fmt, ##__VA_ARGS__);                      \
-    } else {                                                              \
-      __error(__LINE__, __func__, __FILE__, fmt, ##__VA_ARGS__);          \
-    }                                                                     \
+//   FATALF("Oh no fatal error, value=%d.", value);
+
+#define FATALF(fmt, ...)                                                       \
+  do {                                                                         \
+    if (__NEST_DEBUG) {                                                        \
+      __error_nest(__LINE__, __func__, __FILE__, __LINE_NUM, __FUNC_NAME,      \
+                   __FILE_NAME, fmt, ##__VA_ARGS__);                           \
+    } else {                                                                   \
+      __error(__LINE__, __func__, __FILE__, fmt, ##__VA_ARGS__);               \
+    }                                                                          \
   } while (0)
 
 // DEB_FN(), CALL_FN()
@@ -68,8 +69,8 @@
 //   line in my_fn and the line where my_fn was called.
 #ifdef DEBUG
 
-#define DEB_FN(ret, fn, ...)                           \
-  ret fn##__(int __LINE_NUM, const char __FUNC_NAME[], \
+#define DEB_FN(ret, fn, ...)                                                   \
+  ret fn##__(int __LINE_NUM, const char __FUNC_NAME[],                         \
              const char __FILE_NAME[], bool __NEST_DEBUG, __VA_ARGS__)
 #define CALL_FN(fn, ...) fn(__LINE__, __func__, __FILE__, true, __VA_ARGS__)
 
@@ -90,16 +91,16 @@
 // Usage:
 //   ASSERT(NOT_NULL(a), *a > 5, b != 66);
 #define __GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
-#define ASSERT2(exp1, exp2) \
-  ASSERT1(exp1);            \
+#define ASSERT2(exp1, exp2)                                                    \
+  ASSERT1(exp1);                                                               \
   ASSERT1(exp2)
-#define ASSERT3(exp1, exp2, exp3) \
-  ASSERT1(exp1);                  \
+#define ASSERT3(exp1, exp2, exp3)                                              \
+  ASSERT1(exp1);                                                               \
   ASSERT2(exp2, exp3)
-#define ASSERT4(exp1, exp2, exp3, exp4) \
-  ASSERT2(exp1, exp2);                  \
+#define ASSERT4(exp1, exp2, exp3, exp4)                                        \
+  ASSERT2(exp1, exp2);                                                         \
   ASSERT2(exp3, exp4)
-#define S_ASSERT(...) \
+#define S_ASSERT(...)                                                          \
   __GET_MACRO(__VA_ARGS__, ASSERT4, ASSERT3, ASSERT2, ASSERT1)(__VA_ARGS__)
 #define IS_NULL(exp) (NULL == (exp))
 #define NOT_NULL(exp) (NULL != (exp))
@@ -108,17 +109,17 @@
 
 #ifdef DEBUG
 #define ASSERT(...) S_ASSERT(__VA_ARGS__)
-#define ASSERT1(exp)                                                         \
-  do {                                                                       \
-    if (!(exp)) {                                                            \
-      ERROR("Assertion failed. Expression( %s ) evaluated to false.", #exp); \
-    }                                                                        \
+#define ASSERT1(exp)                                                           \
+  do {                                                                         \
+    if (!(exp)) {                                                              \
+      FATALF("Assertion failed. Expression( %s ) evaluated to false.", #exp);  \
+    }                                                                          \
   } while (0)
 #else
 #define ASSERT(...)
-#define ASSERT1(exp) \
-  do {               \
-    (void)(exp);     \
+#define ASSERT1(exp)                                                           \
+  do {                                                                         \
+    (void)(exp);                                                               \
   } while (0)
 #endif
 

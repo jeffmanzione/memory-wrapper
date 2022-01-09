@@ -18,7 +18,7 @@ struct __Entry {
   _Entry *prev, *next;
 };
 
-#define pos(hval, num_probes, table_sz) \
+#define pos(hval, num_probes, table_sz)                                        \
   (((hval) + ((num_probes) * (num_probes))) % (table_sz))
 #define calculate_new_size(current_sz) (((current_sz)*2) + 1)
 #define calculate_thresh(table_sz) ((int)((table_sz) / 2.f))
@@ -152,7 +152,7 @@ bool map_insert(Map *map, const void *key, const void *value) {
                                       map->table, map->table_sz, &map->first,
                                       &map->last, &too_many_inserts);
     if (too_many_inserts) {
-      ERROR("THIS SHOULD NEVER HAPPEN.");
+      FATALF("THIS SHOULD NEVER HAPPEN.");
     }
   }
   if (was_inserted) {
@@ -242,7 +242,7 @@ void _resize_table(Map *map) {
                        new_table, new_table_sz, &new_first, &new_last,
                        &too_many_inserts);
     if (too_many_inserts) {
-      ERROR("THIS SHOULD NEVER HAPPEN.");
+      FATALF("THIS SHOULD NEVER HAPPEN.");
     }
   }
 

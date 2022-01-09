@@ -117,15 +117,15 @@ void mgraph_dec(MGraph *mg, Node *parent, Node *child) {
   ASSERT(NOT_NULL(mg), NOT_NULL(parent), NOT_NULL(child));
   _Edge *p2c = map_lookup(&parent->children, child);
   if (NULL == p2c) {
-    ERROR("Removing reference from parent %p to %p which did not exist.",
-          parent->ptr, child->ptr);
+    FATALF("Removing reference from parent %p to %p which did not exist.",
+           parent->ptr, child->ptr);
     map_insert(&parent->children, child, _edge_create(mg, child));
   }
   p2c->ref_count--;
   _Edge *c2p = map_lookup(&child->parents, parent);
   if (NULL == c2p) {
-    ERROR("Removing reference from child %p to %p which did not exist.",
-          child->ptr, parent->ptr);
+    FATALF("Removing reference from child %p to %p which did not exist.",
+           child->ptr, parent->ptr);
     map_insert(&child->parents, parent, _edge_create(mg, parent));
   }
   c2p->ref_count--;
