@@ -16,6 +16,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Global values for debug functions.
+bool __NEST_DEBUG = false;
+int __LINE_NUM = 0;
+const char *__FUNC_NAME = NULL;
+const char *__FILE_NAME = NULL;
+
 // DEBUGF(fmt, ...)
 //
 // Outputs a message with the given [fmt] just like pritnf but with some

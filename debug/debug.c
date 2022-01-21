@@ -9,12 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Global values for debug functions.
-bool __NEST_DEBUG = false;
-int __LINE_NUM = 0;
-const char *__FUNC_NAME = NULL;
-const char *__FILE_NAME = NULL;
-
 void __error(int line_num, const char func_name[], const char file_name[],
              const char fmt[], ...) {
   va_list args;
