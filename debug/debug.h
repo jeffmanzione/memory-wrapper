@@ -17,10 +17,10 @@
 #include <stdlib.h>
 
 // Global values for debug functions.
-bool __NEST_DEBUG = false;
-int __LINE_NUM = 0;
-const char *__FUNC_NAME = NULL;
-const char *__FILE_NAME = NULL;
+extern bool __NEST_DEBUG;
+extern int __LINE_NUM;
+extern const char *__FUNC_NAME;
+extern const char *__FILE_NAME;
 
 // DEBUGF(fmt, ...)
 //
