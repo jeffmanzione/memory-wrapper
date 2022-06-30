@@ -241,3 +241,11 @@ _Edge *_edge_create(MGraph *mg, Node *node) {
 void _edge_delete(MGraph *mg, _Edge *edge) {
   __arena_dealloc(&mg->edge_arena, edge);
 }
+
+uint32_t mgraph_node_count(const MGraph *const mg) {
+  return set_size(&mg->nodes);
+}
+
+const Set *mgraph_nodes(const MGraph *const mg) { return &mg->nodes; }
+
+const void *node_ptr(const Node *node) { return node->ptr; }

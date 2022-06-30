@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "struct/set.h"
+
 // Useful for changing is type in the future.
 typedef void *Ref;
 
@@ -28,7 +30,7 @@ typedef struct {
   bool eager_delete_edges;
   // Memory for Nodes will be freed when the node entity is deleted.
   bool eager_delete_nodes;
-  // Context needed during deltion operations.
+  // Context needed during deletion operations.
   void *ctx;
 } MGraphConf;
 
@@ -57,7 +59,16 @@ void mgraph_inc(MGraph *mg, Node *parent, Node *child);
 void mgraph_dec(MGraph *mg, Node *parent, Node *child);
 
 // Deletes any nodes which no longer have a target reference and potentially
-// freeing up their space to be reused. Returns the number of nodes which were freed.
+// freeing up their space to be reused. Returns the number of nodes which were
+// freed.
 uint32_t mgraph_collect_garbage(MGraph *mg);
+
+// The number of nodes currently in the graph.
+uint32_t mgraph_node_count(const MGraph *const mg);
+
+// Returns the nodes of the graph.
+const Set *mgraph_nodes(const MGraph *const mg);
+
+const void *node_ptr(const Node *node);
 
 #endif /* ALLOC_MEMORY_GRAPH_MEMORY_GRAPH_H_ */

@@ -239,7 +239,9 @@ char *strndup(const char *str, size_t chars) {
   int n;
   buffer = (char *)malloc(sizeof(char) * (chars + 1));
   if (buffer) {
-    for (n = 0; ((n < chars) && (str[n] != 0)); n++) buffer[n] = str[n];
+    for (n = 0; ((n < chars) && (str[n] != 0)); n++) {
+      buffer[n] = str[n];
+    }
     buffer[n] = '\0';
   }
   return buffer;

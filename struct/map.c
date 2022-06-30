@@ -42,7 +42,7 @@ void map_init(Map *map, uint32_t size, Hasher hasher, Comparator comparator,
   map->dealloc = dealloc;
   map->table_sz = size;
   map->entries_thresh = calculate_thresh(size);
-  map->table = alloc(sizeof(_Entry), size, "_Entry");
+  map->table = NULL; // alloc(sizeof(_Entry), size, "_Entry");
   map->first = NULL;
   map->last = NULL;
   map->num_entries = 0;
@@ -112,6 +112,7 @@ bool _map_insert_helper(Map *map, const void *key, const void *value,
     // Pair is already present in the table, so the mission is accomplished.
     if (hval == me->hash_value) {
       if (0 == map->compare(key, me->pair.key)) {
+        me->pair.value = (void *)value;
         return false;
       }
     }
@@ -136,7 +137,9 @@ bool _map_insert_helper(Map *map, const void *key, const void *value,
 
 bool map_insert(Map *map, const void *key, const void *value) {
   ASSERT(NOT_NULL(map));
-  if (map->num_entries > map->entries_thresh) {
+  if (NULL == map->table) {
+    map->table = map->alloc(sizeof(_Entry), map->table_sz, "_Entry");
+  } else if (map->num_entries > map->entries_thresh) {
     _resize_table(map);
   }
   bool too_many_inserts = false;
@@ -188,6 +191,10 @@ _Entry *_map_lookup_entry(const Map *map, const void *key, _Entry *table,
 
 Pair map_remove(Map *map, const void *key) {
   ASSERT(NOT_NULL(map));
+  if (NULL == map->table) {
+    Pair pair = {key, NULL};
+    return pair;
+  }
   _Entry *me = _map_lookup_entry(map, key, map->table, map->table_sz);
   if (NULL == me) {
     Pair pair = {key, NULL};
@@ -210,6 +217,9 @@ Pair map_remove(Map *map, const void *key) {
 
 void *map_lookup(const Map *map, const void *key) {
   ASSERT(NOT_NULL(map));
+  if (NULL == map->table) {
+    return NULL;
+  }
   _Entry *me = _map_lookup_entry(map, key, map->table, map->table_sz);
   if (NULL == me) {
     return NULL;
@@ -219,6 +229,9 @@ void *map_lookup(const Map *map, const void *key) {
 
 void map_iterate(const Map *map, PairAction action) {
   ASSERT(NOT_NULL(map));
+  if (NULL == map->table) {
+    return;
+  }
   M_iter iter;
   for (iter = map_iter((Map *)map); has(&iter); inc(&iter)) {
     action(&iter.__entry->pair);
