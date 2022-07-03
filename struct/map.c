@@ -49,7 +49,10 @@ void map_init(Map *map, uint32_t size, Hasher hasher, Comparator comparator,
 }
 
 void map_finalize(Map *map) {
-  ASSERT(NOT_NULL(map), NOT_NULL(map->dealloc), NOT_NULL(map->table));
+  ASSERT(NOT_NULL(map), NOT_NULL(map->dealloc));
+  if (NULL == map->table) {
+    return;
+  }
   map->dealloc((void **)&map->table);
 }
 
