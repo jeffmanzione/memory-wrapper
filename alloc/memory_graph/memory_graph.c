@@ -116,17 +116,15 @@ void mgraph_inc(MGraph *mg, Node *parent, Node *child) {
 void mgraph_dec(MGraph *mg, Node *parent, Node *child) {
   ASSERT(NOT_NULL(mg), NOT_NULL(parent), NOT_NULL(child));
   _Edge *p2c = map_lookup(&parent->children, child);
-  if (NULL == p2c) {
+  if (NULL == p2c || p2c->ref_count < 1) {
     FATALF("Removing reference from parent %p to %p which did not exist.",
            parent->ptr, child->ptr);
-    map_insert(&parent->children, child, _edge_create(mg, child));
   }
   p2c->ref_count--;
   _Edge *c2p = map_lookup(&child->parents, parent);
-  if (NULL == c2p) {
+  if (NULL == c2p || c2p->ref_count < 1) {
     FATALF("Removing reference from child %p to %p which did not exist.",
            child->ptr, parent->ptr);
-    map_insert(&child->parents, parent, _edge_create(mg, parent));
   }
   c2p->ref_count--;
 }
@@ -168,6 +166,23 @@ uint32_t mgraph_collect_garbage(MGraph *mg) {
     deleted_nodes_count++;
   }
   set_finalize(&marked);
+
+  // printf("Nodes:\n\titem_size=%u\n\tcapacity=%u\n\titem_count=%u\n\tsubarena_"
+  //        "capacity=%u\n\tsubarena_count=%u\n",
+  //        __arena_item_size(&mg->node_arena),
+  //        __arena_capacity(&mg->node_arena),
+  //        __arena_item_count(&mg->node_arena),
+  //        __arena_subarena_capacity(&mg->node_arena),
+  //        __arena_subarena_count(&mg->node_arena));
+
+  // printf("Edges:\n\titem_size=%u\n\tcapacity=%u\n\titem_count=%u\n\tsubarena_"
+  //        "capacity=%u\n\tsubarena_count=%u\n",
+  //        __arena_item_size(&mg->edge_arena),
+  //        __arena_capacity(&mg->edge_arena),
+  //        __arena_item_count(&mg->edge_arena),
+  //        __arena_subarena_capacity(&mg->edge_arena),
+  //        __arena_subarena_count(&mg->edge_arena));
+
   return deleted_nodes_count;
 }
 
@@ -217,11 +232,11 @@ void _node_delete(MGraph *mg, Node *node, bool delete_edges, bool delete_node) {
   if (delete_edges) {
     M_iter children = map_iter(&node->children);
     for (; has(&children); inc(&children)) {
-      __arena_dealloc(&mg->edge_arena, (_Edge *)value(&children));
+      _edge_delete(mg, (_Edge *)value(&children));
     }
     M_iter parents = map_iter(&node->parents);
     for (; has(&parents); inc(&parents)) {
-      __arena_dealloc(&mg->edge_arena, (_Edge *)value(&parents));
+      _edge_delete(mg, (_Edge *)value(&parents));
     }
   }
   map_finalize(&node->children);

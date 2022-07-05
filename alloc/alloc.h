@@ -8,8 +8,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 // Initializes allocation system.
 void alloc_init();
@@ -20,6 +22,8 @@ bool alloc_ready();
 void alloc_finalize();
 // Allocation will output to stdout when memory is requested.
 void alloc_set_verbose(bool);
+// Prints out all items in memory in CSV format.
+void alloc_to_csv(FILE *);
 
 // Allocates a solid memory block of size: [sizeof(type)*count].
 //
@@ -30,8 +34,8 @@ void alloc_set_verbose(bool);
 // Usage:
 //   MyStruct *arr = ALLOC_ARRAY(MyStruct, 20);
 #ifdef DEBUG_MEMORY
-#define ALLOC_ARRAY(type, count)                                        \
-  (type *)__alloc(/*type=*/sizeof(type), /*count=*/(count), (__LINE__), \
+#define ALLOC_ARRAY(type, count)                                               \
+  (type *)__alloc(/*type=*/sizeof(type), /*count=*/(count), (__LINE__),        \
                   (__func__), (__FILE__), (#type))
 #else
 #define ALLOC_ARRAY(type, count) (type *)calloc((count), sizeof(type))
@@ -48,8 +52,8 @@ void alloc_set_verbose(bool);
 // Usage:
 //   MyStruct *arr = ALLOC_ARRAY2(MyStruct, 20);
 #ifdef DEBUG_MEMORY
-#define ALLOC_ARRAY2(type, count)                                       \
-  (type *)__alloc(/*type=*/sizeof(type), /*count=*/(count), (__LINE__), \
+#define ALLOC_ARRAY2(type, count)                                              \
+  (type *)__alloc(/*type=*/sizeof(type), /*count=*/(count), (__LINE__),        \
                   (__func__), (__FILE__), (#type))
 #else
 #define ALLOC_ARRAY2(type, count) (type *)malloc((count) * sizeof(type))
@@ -66,8 +70,8 @@ void alloc_set_verbose(bool);
 //   MyStruct *arr =
 //       (MyStruct *) ALLOC_ARRAY_SZ("MyStruct", sizeof(MyStruct), 20);
 #ifdef DEBUG_MEMORY
-#define ALLOC_ARRAY_SZ(type_name, type_sz, count)                        \
-  __alloc(/*type=*/(type_sz), /*count=*/(count), (__LINE__), (__func__), \
+#define ALLOC_ARRAY_SZ(type_name, type_sz, count)                              \
+  __alloc(/*type=*/(type_sz), /*count=*/(count), (__LINE__), (__func__),       \
           (__FILE__), (type_name))
 #else
 #define ALLOC_ARRAY_SZ(type_name, type_sz, count) malloc((count) * (type_sz))
@@ -84,11 +88,11 @@ void alloc_set_verbose(bool);
 //   MyStruct *arr = ALLOC_ARRAY2(MyStruct, 20);
 //   arr = REALLOC_SZ(arr, sizeof(MyStruct), 50);
 #ifdef DEBUG_MEMORY
-#define REALLOC_SZ(ptr, type_sz, count)                                   \
-  (void *)__realloc(/*ptr=*/(ptr), /*type=*/(type_sz), /*count=*/(count), \
+#define REALLOC_SZ(ptr, type_sz, count)                                        \
+  (void *)__realloc(/*ptr=*/(ptr), /*type=*/(type_sz), /*count=*/(count),      \
                     (__LINE__), (__func__), (__FILE__))
 #else
-#define REALLOC_SZ(ptr, type_sz, count) \
+#define REALLOC_SZ(ptr, type_sz, count)                                        \
   (void *)realloc((ptr), (type_sz) * (count))
 #endif
 
@@ -103,7 +107,7 @@ void alloc_set_verbose(bool);
 //   MyStruct *arr = ALLOC_ARRAY2(MyStruct, 20);
 //   arr = REALLOC(arr, MyStruct, 50);
 #ifdef DEBUG_MEMORY
-#define REALLOC(ptr, type, count) \
+#define REALLOC(ptr, type, count)                                              \
   (type *)REALLOC_SZ((ptr), sizeof(type), (count))
 #else
 #define REALLOC(ptr, type, count) (type *)realloc((ptr), sizeof(type) * (count))
@@ -119,7 +123,7 @@ void alloc_set_verbose(bool);
 //   MyStruct *arr = ALLOC_ARRAY2(MyStruct, 20);
 //   DEALLOC(arr);
 #ifdef DEBUG_MEMORY
-#define DEALLOC(ptr) \
+#define DEALLOC(ptr)                                                           \
   __dealloc((void **)&(ptr), (__LINE__), (__func__), (__FILE__))
 #else
 #define DEALLOC(ptr) free((void *)(ptr))
@@ -158,7 +162,7 @@ void alloc_set_verbose(bool);
 //   char *cpy = ALLOC_STRDUP(src_str);
 //   DEALLOC(cpy);
 #ifdef DEBUG_MEMORY
-#define ALLOC_STRDUP(str) \
+#define ALLOC_STRDUP(str)                                                      \
   __strndup((char *)str, strlen(str), (__LINE__), (__func__), (__FILE__))
 #else
 #define ALLOC_STRDUP(str) strndup((char *)(str), strlen(str))
@@ -181,7 +185,7 @@ void alloc_set_verbose(bool);
 //   char *cpy = ALLOC_STRNDUP(src_str, 6);
 //   DEALLOC(cpy);
 #ifdef DEBUG_MEMORY
-#define ALLOC_STRNDUP(str, len) \
+#define ALLOC_STRNDUP(str, len)                                                \
   __strndup((char *)str, len, (__LINE__), (__func__), (__FILE__))
 #else
 #define ALLOC_STRNDUP(str, len) strndup((char *)(str), len)

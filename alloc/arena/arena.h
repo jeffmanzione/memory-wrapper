@@ -23,6 +23,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 // Declares an arena for the given type.
 //
@@ -51,7 +52,7 @@
 //     ARENA_INIT(MyType);
 //     ...
 //   }
-#define ARENA_INIT(typename) \
+#define ARENA_INIT(typename)                                                   \
   __arena_init(&__ARENA__##typename, sizeof(typename), #typename)
 
 // Finalizes and does any tyding up related to an arena, freeing all memory at
@@ -89,9 +90,11 @@ typedef struct {
   bool inited;
   const char *name;
   _Subarena *last;
+  size_t item_sz;
   size_t alloc_sz;
   void *next, *end;
   void *last_freed;
+  uint32_t item_count;
 } __Arena;
 
 // Do not call these function directly.
@@ -99,5 +102,11 @@ void __arena_init(__Arena *arena, size_t sz, const char name[]);
 void __arena_finalize(__Arena *arena);
 void *__arena_alloc(__Arena *arena);
 void __arena_dealloc(__Arena *arena, void *ptr);
+
+uint32_t __arena_item_size(__Arena *arena);
+uint32_t __arena_capacity(__Arena *arena);
+uint32_t __arena_item_count(__Arena *arena);
+uint32_t __arena_subarena_capacity(__Arena *arena);
+uint32_t __arena_subarena_count(__Arena *arena);
 
 #endif /* ALLOC_ARENA_ARENA_H_ */

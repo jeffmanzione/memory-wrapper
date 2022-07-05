@@ -107,6 +107,23 @@ void alloc_finalize() {
   _alloc_busy = alloc_val;
 }
 
+void alloc_to_csv(FILE *file) {
+  volatile bool alloc_val = _alloc_busy;
+  _alloc_busy = true;
+  ASSERT_NOT_NULL(_in_mem);
+  M_iter iter = set_iter(_in_mem);
+  fprintf(file, "type_name,type_size,count,file,line,func,ptr\n");
+  for (; has(&iter); inc(&iter)) {
+    void *ptr = value(&iter);
+    ASSERT_NOT_NULL(ptr);
+    _AllocInfo *info = (_AllocInfo *)((char *)ptr - _alloc_info_size());
+    fprintf(file, "%s,%d,%d,%s,%d,%s,%p\n", info->type_name, info->elt_size,
+            info->count, info->file, info->line, info->func, ptr);
+  }
+  fflush(file);
+  _alloc_busy = alloc_val;
+}
+
 void _alloc_register(void *ptr, uint32_t elt_size, uint32_t count,
                      uint32_t line, const char func[], const char file[],
                      const char type_name[]) {

@@ -48,11 +48,13 @@ void __arena_init(__Arena *arena, size_t sz, const char name[]) {
   ASSERT_NOT_NULL(arena);
   descriptor_sz = ((int)ceil(((float)sizeof(Descriptor)) / 4)) * 4;
   arena->name = name;
+  arena->item_sz = sz;
   arena->alloc_sz = sz + descriptor_sz;
   arena->last = _subarena_create(NULL, arena->alloc_sz);
   arena->next = arena->last->block;
   arena->end = _CHAR_POINTER(arena->last->block) + arena->last->block_sz;
   arena->last_freed = NULL;
+  arena->item_count = 0;
 }
 
 void __arena_finalize(__Arena *arena) {
@@ -62,6 +64,7 @@ void __arena_finalize(__Arena *arena) {
 
 void *__arena_alloc(__Arena *arena) {
   ASSERT_NOT_NULL(arena);
+  arena->item_count++;
   // Use up space that was already freed.
   if (NULL != arena->last_freed) {
     void *free_spot = arena->last_freed;
@@ -83,7 +86,30 @@ void *__arena_alloc(__Arena *arena) {
 
 void __arena_dealloc(__Arena *arena, void *ptr) {
   ASSERT(NOT_NULL(arena), NOT_NULL(ptr));
+  arena->item_count--;
   Descriptor *d = (Descriptor *)(_CHAR_POINTER(ptr) - descriptor_sz);
   d->prev_freed = arena->last_freed;
   arena->last_freed = (void *)d;
+}
+
+uint32_t __arena_item_size(__Arena *arena) { return arena->item_sz; }
+
+uint32_t __arena_capacity(__Arena *arena) {
+  return __arena_subarena_count(arena) * __arena_subarena_capacity(arena);
+}
+
+uint32_t __arena_item_count(__Arena *arena) { return arena->item_count; }
+
+uint32_t __arena_subarena_capacity(__Arena *arena) {
+  return DEFAULT_ELTS_IN_CHUNK;
+}
+
+uint32_t __arena_subarena_count(__Arena *arena) {
+  uint32_t subarena_count = 0;
+  _Subarena *sarena = arena->last;
+  while (NULL != sarena) {
+    subarena_count++;
+    sarena = sarena->prev;
+  }
+  return subarena_count;
 }
