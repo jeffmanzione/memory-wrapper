@@ -86,6 +86,12 @@
 
 typedef struct __Subarena _Subarena;
 
+typedef struct _Descriptor Descriptor;
+
+struct _Descriptor {
+  Descriptor *prev_freed;
+};
+
 typedef struct {
   bool inited;
   const char *name;
@@ -93,7 +99,7 @@ typedef struct {
   size_t item_sz;
   size_t alloc_sz;
   void *next, *end;
-  void *last_freed;
+  Descriptor *last_freed;
   uint32_t item_count;
 } __Arena;
 

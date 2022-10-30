@@ -16,11 +16,10 @@
 // Treates a void* as a char* to make Windows CC happy.
 #define _CHAR_POINTER(void_ptr) ((char *)(void_ptr))
 
-int descriptor_sz;
+#define _TO_ADDRESS(desc_ptr) (_CHAR_POINTER(desc_ptr) + descriptor_sz)
+#define _TO_DESCRIPTOR(ptr) ((Descriptor *)(_CHAR_POINTER(ptr) - descriptor_sz))
 
-typedef struct {
-  void *prev_freed;
-} Descriptor;
+uint32_t descriptor_sz;
 
 struct __Subarena {
   _Subarena *prev;
@@ -46,7 +45,7 @@ void _subarena_delete(_Subarena *sa) {
 
 void __arena_init(__Arena *arena, size_t sz, const char name[]) {
   ASSERT_NOT_NULL(arena);
-  descriptor_sz = ((int)ceil(((float)sizeof(Descriptor)) / 4)) * 4;
+  descriptor_sz = ((uint32_t)ceil(((float)sizeof(Descriptor)) / 4)) * 4;
   arena->name = name;
   arena->item_sz = sz;
   arena->alloc_sz = sz + descriptor_sz;
@@ -67,9 +66,9 @@ void *__arena_alloc(__Arena *arena) {
   arena->item_count++;
   // Use up space that was already freed.
   if (NULL != arena->last_freed) {
-    void *free_spot = arena->last_freed;
-    arena->last_freed = ((Descriptor *)free_spot)->prev_freed;
-    return _CHAR_POINTER(free_spot) + descriptor_sz;
+    Descriptor *free_spot = arena->last_freed;
+    arena->last_freed = free_spot->prev_freed;
+    return _TO_ADDRESS(free_spot);
   }
   // Allocate a new subarena if the current one is full.
   if (arena->next == arena->end) {
@@ -81,15 +80,15 @@ void *__arena_alloc(__Arena *arena) {
   }
   void *spot = arena->next;
   arena->next = _CHAR_POINTER(arena->next) + arena->alloc_sz;
-  return _CHAR_POINTER(spot) + descriptor_sz;
+  return _TO_ADDRESS(spot);
 }
 
 void __arena_dealloc(__Arena *arena, void *ptr) {
   ASSERT(NOT_NULL(arena), NOT_NULL(ptr));
-  arena->item_count--;
-  Descriptor *d = (Descriptor *)(_CHAR_POINTER(ptr) - descriptor_sz);
+  Descriptor *d = _TO_DESCRIPTOR(ptr);
   d->prev_freed = arena->last_freed;
-  arena->last_freed = (void *)d;
+  arena->last_freed = d;
+  arena->item_count--;
 }
 
 uint32_t __arena_item_size(__Arena *arena) { return arena->item_sz; }
