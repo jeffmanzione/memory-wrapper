@@ -93,7 +93,6 @@ struct _Descriptor {
 };
 
 typedef struct {
-  bool inited;
   const char *name;
   _Subarena *last;
   size_t item_sz;

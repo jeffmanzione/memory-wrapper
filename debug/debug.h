@@ -142,10 +142,10 @@ extern const char *__FILE_NAME;
 void __debugf(int line_num, const char func_name[], const char file_name[],
               const char fmt[], ...);
 #endif
-void __error(int line_num, const char func_name[], const char file_name[],
-             const char fmr[], ...);
-void __error_nest(int line_num, const char func_name[], const char file_name[],
-                  int nested_line_num, const char nested_func_name[],
-                  const char nested_file_name[], const char fmr[], ...);
+void __errorf(int line_num, const char func_name[], const char file_name[],
+              const char fmt[], ...);
+void __errorf_nest(int line_num, const char func_name[], const char file_name[],
+                   int nested_line_num, const char nested_func_name[],
+                   const char nested_file_name[], const char fmr[], ...);
 
 #endif /* DEBUG_DEBUG_H_ */

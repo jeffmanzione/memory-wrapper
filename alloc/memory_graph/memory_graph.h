@@ -66,9 +66,10 @@ uint32_t mgraph_collect_garbage(MGraph *mg);
 // The number of nodes currently in the graph.
 uint32_t mgraph_node_count(const MGraph *const mg);
 
-// Returns the nodes of the graph.
+// The nodes of the graph.
 const Set *mgraph_nodes(const MGraph *const mg);
 
+// The value ptr of [node].
 const void *node_ptr(const Node *node);
 
 #endif /* ALLOC_MEMORY_GRAPH_MEMORY_GRAPH_H_ */

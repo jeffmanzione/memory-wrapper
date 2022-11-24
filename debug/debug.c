@@ -14,8 +14,8 @@ int __LINE_NUM = 0;
 const char *__FUNC_NAME = NULL;
 const char *__FILE_NAME = NULL;
 
-void __error(int line_num, const char func_name[], const char file_name[],
-             const char fmt[], ...) {
+void __errorf(int line_num, const char func_name[], const char file_name[],
+              const char fmt[], ...) {
   va_list args;
   va_start(args, fmt);
   fprintf(stderr, "Error in file(%s) in function(%s) at line(%d): ", file_name,
@@ -27,9 +27,9 @@ void __error(int line_num, const char func_name[], const char file_name[],
   exit(1);
 }
 
-void __error_nest(int line_num, const char func_name[], const char file_name[],
-                  int nested_line_num, const char nested_func_name[],
-                  const char nested_file_name[], const char fmt[], ...) {
+void __errorf_nest(int line_num, const char func_name[], const char file_name[],
+                   int nested_line_num, const char nested_func_name[],
+                   const char nested_file_name[], const char fmt[], ...) {
   va_list args;
   va_start(args, fmt);
   fprintf(stderr,

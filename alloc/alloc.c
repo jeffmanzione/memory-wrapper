@@ -130,10 +130,10 @@ void _alloc_register(void *ptr, uint32_t elt_size, uint32_t count,
   if (!_alloc_busy) {
     _alloc_busy = true;
     if (!set_insert(_in_mem, ptr)) {
-      __error(
-          line, func, file,
-          "Attempting to allocate %p(%sx%d), but it is already allocated.\n",
-          ptr, type_name, count);
+      // __error(
+      //     line, func, file,
+      //     "Attempting to allocate %p(%sx%d), but it is already allocated.\n",
+      //     ptr, type_name, count);
     }
     _alloc_busy = false;
   }
