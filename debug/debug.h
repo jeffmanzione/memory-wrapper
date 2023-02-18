@@ -54,10 +54,10 @@ extern const char *__FILE_NAME;
 #define FATALF(fmt, ...)                                                       \
   do {                                                                         \
     if (__NEST_DEBUG) {                                                        \
-      __error_nest(__LINE__, __func__, __FILE__, __LINE_NUM, __FUNC_NAME,      \
-                   __FILE_NAME, fmt, ##__VA_ARGS__);                           \
+      __errorf_nest(__LINE__, __func__, __FILE__, __LINE_NUM, __FUNC_NAME,     \
+                    __FILE_NAME, fmt, ##__VA_ARGS__);                          \
     } else {                                                                   \
-      __error(__LINE__, __func__, __FILE__, fmt, ##__VA_ARGS__);               \
+      __errorf(__LINE__, __func__, __FILE__, fmt, ##__VA_ARGS__);              \
     }                                                                          \
   } while (0)
 
