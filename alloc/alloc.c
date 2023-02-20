@@ -74,13 +74,13 @@ _AllocInfo _alloc_info(uint32_t elt_size, uint32_t count, uint32_t line,
 void _alloc_info_delete(_AllocInfo *info, uint32_t line, const char func[],
                         const char file[]) {
   if (NULL == info || NULL == info->type_name || NULL == info->file) {
-    __error(line, func, file, "Memory management error.");
+    __errorf(line, func, file, "Memory management error.");
   }
   ASSERT(NOT_NULL(info), NOT_NULL(info->type_name), NOT_NULL(info->file),
          NOT_NULL(info->func));
   free(info->type_name);
   free(info->file);
-  f free(info->func);
+  free(info->func);
 }
 
 int _alloc_info_size() {
@@ -130,7 +130,7 @@ void _alloc_register(void *ptr, uint32_t elt_size, uint32_t count,
   if (!_alloc_busy) {
     _alloc_busy = true;
     if (!set_insert(_in_mem, ptr)) {
-      // __error(
+      // __errorf(
       //     line, func, file,
       //     "Attempting to allocate %p(%sx%d), but it is already allocated.\n",
       //     ptr, type_name, count);
@@ -144,8 +144,8 @@ void _alloc_unregister(void *ptr, uint32_t line, const char func[],
   if (!_alloc_busy) {
     _alloc_busy = true;
     if (!set_remove(_in_mem, ptr)) {
-      __error(line, func, file,
-              "Attempting to free %p, but it is not allocated.\n", ptr);
+      __errorf(line, func, file,
+               "Attempting to free %p, but it is not allocated.\n", ptr);
     }
     _alloc_busy = false;
   }
@@ -170,9 +170,9 @@ void _log_alloc(uint32_t line, const char func[], const char file[],
 void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
               const char func[], const char file[], const char type_name[]) {
   if (0 == elt_size || 0 == count) {
-    __error(line, func, file,
-            "Either allocated array is of 0 elements or it is"
-            " an array of type sizeof(0).");
+    __errorf(line, func, file,
+             "Either allocated array is of 0 elements or it is"
+             " an array of type sizeof(0).");
   }
   int info_space = _alloc_info_size();
   void *info_ptr = calloc(1, info_space + count * elt_size);
@@ -180,7 +180,7 @@ void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
   *((_AllocInfo *)info_ptr) =
       _alloc_info(elt_size, count, line, type_name, func, file);
   if (NULL == info_ptr) {
-    __error(line, func, file, "Failed to allocate memory.");
+    __errorf(line, func, file, "Failed to allocate memory.");
   }
   void *ptr = (char *)info_ptr + info_space;
   _alloc_register(ptr, elt_size, count, line, func, file, type_name);
@@ -193,11 +193,11 @@ void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
 void *__realloc(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
                 const char func[], const char file[]) {
   if (NULL == ptr) {
-    __error(line, func, file, "Pointer argument was null.");
+    __errorf(line, func, file, "Pointer argument was null.");
   }
   int new_size = elt_size * count;
   if (0 == new_size) {
-    __error(line, func, file, "Tried to realloc to an empty array.");
+    __errorf(line, func, file, "Tried to realloc to an empty array.");
   }
   int info_space = _alloc_info_size();
   void *info_ptr = (char *)ptr - info_space;
@@ -205,7 +205,7 @@ void *__realloc(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
   int old_size = old_info.elt_size * old_info.count;
   void *new_info_ptr = realloc(info_ptr, info_space + new_size);
   if (NULL == new_info_ptr) {
-    __error(line, func, file, "Failed to reallocate memory.");
+    __errorf(line, func, file, "Failed to reallocate memory.");
   }
   *((_AllocInfo *)new_info_ptr) =
       _alloc_info(elt_size, count, line, old_info.type_name, func, file);
@@ -228,7 +228,7 @@ void *__realloc(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
 void __dealloc(void **ptr, uint32_t line, const char func[],
                const char file[]) {
   if (NULL == ptr || NULL == *ptr) {
-    __error(line, func, file, "Pointer argument was null.");
+    __errorf(line, func, file, "Pointer argument was null.");
   }
   int info_space = _alloc_info_size();
   void *info_ptr = *((char **)ptr) - info_space;
@@ -243,7 +243,7 @@ void __dealloc(void **ptr, uint32_t line, const char func[],
 char *__strndup(char *str, size_t len, uint32_t line, const char func[],
                 const char file[]) {
   if (NULL == str) {
-    __error(line, func, file, "Pointer argument was null.");
+    __errorf(line, func, file, "Pointer argument was null.");
   }
   char *cpy = ALLOC_ARRAY2(char, len + 1);
   cpy[len] = '\0';
