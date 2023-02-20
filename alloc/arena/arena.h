@@ -41,7 +41,7 @@
 //
 // Usage:
 //   ARENA_DEFINE(MyType);
-#define ARENA_DEFINE(typename) __Arena __ARENA__##typename = {.inited = false};
+#define ARENA_DEFINE(typename) __Arena __ARENA__##typename
 
 // Initializes an arena so that it can allocate memory.
 //
