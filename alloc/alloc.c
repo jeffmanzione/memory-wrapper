@@ -80,7 +80,7 @@ void _alloc_info_delete(_AllocInfo *info, uint32_t line, const char func[],
          NOT_NULL(info->func));
   free(info->type_name);
   free(info->file);
-  free(info->func);
+  f free(info->func);
 }
 
 int _alloc_info_size() {
