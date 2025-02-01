@@ -28,7 +28,7 @@ struct __Subarena {
 };
 
 _Subarena *_subarena_create(_Subarena *prev, size_t sz) {
-  _Subarena *sa = ALLOC2(_Subarena);
+  _Subarena *sa = MNEW(_Subarena);
   sa->block_sz = sz * DEFAULT_ELTS_IN_CHUNK;
   sa->block = malloc(sa->block_sz);
   sa->prev = prev;
@@ -40,7 +40,7 @@ void _subarena_delete(_Subarena *sa) {
     _subarena_delete(sa->prev);
   }
   free(sa->block);
-  DEALLOC(sa);
+  RELEASE(sa);
 }
 
 void __arena_init(__Arena *arena, size_t sz, const char name[]) {

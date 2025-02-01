@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 // Initializes allocation system.
 void alloc_init();
 // If alloc was inited.
@@ -41,6 +40,9 @@ void alloc_to_csv(FILE *);
 #define ALLOC_ARRAY(type, count) (type *)calloc((count), sizeof(type))
 #endif
 
+// Same as ALLOC_ARRAY.
+#define CNEW_ARR(type, count) ALLOC_ARRAY(type, count)
+
 // Allocates a solid memory block of size: [sizeof(type)*count].
 //
 //
@@ -59,6 +61,9 @@ void alloc_to_csv(FILE *);
 #define ALLOC_ARRAY2(type, count) (type *)malloc((count) * sizeof(type))
 #endif
 
+// Same as ALLOC_ARRAY2.
+#define MNEW_ARR(type, count) ALLOC_ARRAY2(type, count)
+
 // Allocates a solid memory block of size: [type_sz*count].
 //
 // Details:
@@ -76,6 +81,10 @@ void alloc_to_csv(FILE *);
 #else
 #define ALLOC_ARRAY_SZ(type_name, type_sz, count) malloc((count) * (type_sz))
 #endif
+
+// Same as ALLOC_ARRAY_SZ.
+#define MNEW_ARR_SZ(type_name, type_sz, count)                                 \
+  ALLOC_ARRAY_SZ(type_name, type_sz, count)
 
 // Allocates a new solid memory block of size: [type_sz*count] and
 // copies the existing data at [ptr] to the newly allocated data, freeing
@@ -129,6 +138,9 @@ void alloc_to_csv(FILE *);
 #define DEALLOC(ptr) free((void *)(ptr))
 #endif
 
+// Same as DEALLOC.
+#define RELEASE(ptr) DEALLOC(ptr)
+
 // Allocates a solid memory block of size: [sizeof(type)].
 //
 // Details:
@@ -138,6 +150,9 @@ void alloc_to_csv(FILE *);
 // Usage:
 //   MyStruct *arr = ALLOC(MyStruct);
 #define ALLOC(type) ALLOC_ARRAY(type, 1)
+
+// Same as ALLOC.
+#define CNEW(type) ALLOC(type)
 
 // Allocates a solid memory block of size: [sizeof(type)].
 //
@@ -150,6 +165,9 @@ void alloc_to_csv(FILE *);
 // Usage:
 //   MyStruct *arr = ALLOC2(MyStruct);
 #define ALLOC2(type) ALLOC_ARRAY2(type, 1)
+
+// Same as ALLOC2.
+#define MNEW(type) ALLOC2(type)
 
 // Copies [str].
 //
