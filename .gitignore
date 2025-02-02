@@ -52,5 +52,9 @@ Mkfile.old
 dkms.conf
 
 # Bazel
-bazel*
+bazel-*
 external
+MODULE.bazel.lock
+
+# zips
+memory-wrapper-*
