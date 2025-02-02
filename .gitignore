@@ -54,7 +54,6 @@ dkms.conf
 # Bazel
 bazel-*
 external
-MODULE.bazel.lock
 
 # zips
 memory-wrapper-*
