@@ -1,0 +1,8 @@
+VERSION = "0.1.0"
+
+module(
+    name = "memory-wrapper",
+    version = VERSION,
+    compatibility_level = 1,
+    repo_name = "com_github_jeffmanzione_memory_wrapper",
+)

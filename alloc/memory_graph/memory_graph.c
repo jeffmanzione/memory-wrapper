@@ -55,7 +55,7 @@ void _edge_delete(MGraph *mg, _Edge *edge);
 
 MGraph *mgraph_create(const MGraphConf *const config) {
   ASSERT(NOT_NULL(config));
-  MGraph *mg = ALLOC2(MGraph);
+  MGraph *mg = MNEW(MGraph);
   mg->config = *config;
   __arena_init(&mg->node_arena, sizeof(Node), "Node");
   __arena_init(&mg->edge_arena, sizeof(_Edge), "_Edge");
@@ -78,7 +78,7 @@ void mgraph_delete(MGraph *mg) {
   __arena_finalize(&mg->edge_arena);
   set_finalize(&mg->nodes);
   set_finalize(&mg->roots);
-  DEALLOC(mg);
+  RELEASE(mg);
 }
 
 Node *mgraph_insert(MGraph *mg, Ref ptr, Deleter del) {
