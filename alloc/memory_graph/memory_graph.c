@@ -48,10 +48,6 @@ typedef struct {
 } _Edge;
 
 uint32_t _node_id(MGraph *mg);
-uint32_t _node_hasher(const void *node);
-int32_t _node_comparator(const void *n1, const void *n2);
-uint32_t _edge_hasher(const void *node);
-int32_t _edge_comparator(const void *n1, const void *n2);
 Node *_node_create(MGraph *mg, Ref ptr, Deleter del);
 void _node_delete(MGraph *mg, Node *node, bool delete_edges, bool delete_node);
 _Edge *_edge_create(MGraph *mg, Node *node);
@@ -63,10 +59,10 @@ MGraph *mgraph_create(const MGraphConf *const config) {
   mg->config = *config;
   __arena_init(&mg->node_arena, sizeof(Node), "Node");
   __arena_init(&mg->edge_arena, sizeof(_Edge), "_Edge");
-  set_init_custom_comparator(&mg->nodes, DEFAULT_NODE_TABLE_SZ, _node_hasher,
-                             _node_comparator);
-  set_init_custom_comparator(&mg->roots, DEFAULT_ROOT_TABLE_SZ, _node_hasher,
-                             _node_comparator);
+  set_init_custom_comparator(&mg->nodes, DEFAULT_NODE_TABLE_SZ, default_hasher,
+                             default_comparator);
+  set_init_custom_comparator(&mg->roots, DEFAULT_ROOT_TABLE_SZ, default_hasher,
+                             default_comparator);
   mg->node_count = 0;
   return mg;
 }
@@ -99,6 +95,10 @@ void mgraph_root(MGraph *mg, Node *node) {
 
 void mgraph_inc(MGraph *mg, Node *parent, Node *child) {
   ASSERT(NOT_NULL(mg), NOT_NULL(parent), NOT_NULL(child));
+  // printf("mgraph_inc(parent=%p, child=%p)\n", parent->ptr, child->ptr);
+  // if (NULL == set_lookup(&mg->nodes, child)) {
+  //   printf("child not in graph (%p)-->(%p)\n", parent->ptr, child->ptr);
+  // }
   _Edge *p2c = map_lookup(&parent->children, child);
   if (NULL == p2c) {
     map_insert(&parent->children, child, _edge_create(mg, child));
@@ -130,6 +130,8 @@ void mgraph_dec(MGraph *mg, Node *parent, Node *child) {
 }
 
 void _process_node(Node *node, Set *marked) {
+  // printf("encountered %p\n", node->ptr);
+
   if (!set_insert(marked, node)) {
     // Node already processed
     return;
@@ -137,6 +139,7 @@ void _process_node(Node *node, Set *marked) {
   M_iter child_iter = map_iter(&node->children);
   for (; has(&child_iter); inc(&child_iter)) {
     _Edge *e = (_Edge *)value(&child_iter);
+    // printf("\tchild %p@%u\n", e->node->ptr, e->ref_count);
     if (e->ref_count > 0) {
       _process_node((void *)key(&child_iter), marked); // blessed.
     }
@@ -147,8 +150,8 @@ uint32_t mgraph_collect_garbage(MGraph *mg) {
   ASSERT(NOT_NULL(mg));
   uint32_t deleted_nodes_count = 0;
   Set marked;
-  set_init_custom_comparator(&marked, set_size(&mg->nodes) * 2, _node_hasher,
-                             _node_comparator);
+  set_init_custom_comparator(&marked, set_size(&mg->nodes) * 2, default_hasher,
+                             default_comparator);
   M_iter root_iter = set_iter(&mg->roots);
   for (; has(&root_iter); inc(&root_iter)) {
     _process_node((Node *)value(&root_iter), &marked);
@@ -190,26 +193,6 @@ uint32_t _node_id(MGraph *mg) {
   return mg->node_count++;
 }
 
-uint32_t _node_hasher(const void *node) {
-  ASSERT(NOT_NULL(node));
-  return ((Node *)node)->id.int_id;
-}
-
-int32_t _node_comparator(const void *n1, const void *n2) {
-  ASSERT(NOT_NULL(n1), NOT_NULL(n2));
-  return ((Node *)n1)->id.int_id - ((Node *)n2)->id.int_id;
-}
-
-uint32_t _edge_hasher(const void *node) {
-  ASSERT(NOT_NULL(node));
-  return ((Node *)node)->id.int_id;
-}
-
-int32_t _edge_comparator(const void *n1, const void *n2) {
-  ASSERT(NOT_NULL(n1), NOT_NULL(n2));
-  return ((Node *)n1)->id.int_id - ((Node *)n2)->id.int_id;
-}
-
 Node *_node_create(MGraph *mg, Ref ptr, Deleter del) {
   ASSERT(NOT_NULL(mg), NOT_NULL(ptr), NOT_NULL(del));
   Node *node = (Node *)__arena_alloc(&mg->node_arena);
@@ -217,9 +200,9 @@ Node *_node_create(MGraph *mg, Ref ptr, Deleter del) {
   node->ptr = ptr;
   node->del = del;
   map_init_custom_comparator(&node->children, DEFAULT_CHILDREN_TABLE_SZ,
-                             _node_hasher, _node_comparator);
+                             default_hasher, default_comparator);
   map_init_custom_comparator(&node->parents, DEFAULT_CHILDREN_TABLE_SZ,
-                             _node_hasher, _node_comparator);
+                             default_hasher, default_comparator);
   return node;
 }
 
