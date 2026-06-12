@@ -5,10 +5,10 @@ git archive \
     --format=zip \
     --prefix "$PROJECT-$VERSION/" \
     --output "./$PROJECT-$VERSION.zip" \
-    master
+    v1.0.x
 
 git archive \
     --format="tar.gz" \
     --prefix "$PROJECT-$VERSION/" \
     --output "./$PROJECT-$VERSION.tar.gz" \
-    master
+    v1.0.x
