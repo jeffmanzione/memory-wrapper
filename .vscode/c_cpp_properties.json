@@ -1,0 +1,20 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${default}",
+        "${workspaceFolder}",
+        "${workspaceFolder}/bazel-memory-wrapper/bazel-out/k8-opt*/bin",
+        "${workspaceFolder}/bazel-memory-wrapper/external/jeffmanzione_c_data_structures+",
+        "${workspaceFolder}/bazel-memory-wrapper/external/jeffmanzione_rzalloc+",
+        "${workspaceFolder}/bazel-memory-wrapper/external/googletest+/googletest/include",
+        "${workspaceFolder}/bazel-memory-wrapper/external/googletest+/googlemock/include"
+      ],
+      "defines": [],
+      "compilerPath": "/usr/bin/gcc",
+      "cppStandard": "gnu++17"
+    }
+  ],
+  "version": 4
+}

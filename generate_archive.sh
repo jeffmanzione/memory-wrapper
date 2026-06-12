@@ -1,5 +1,5 @@
-PROJECT="memory-wrapper"
-VERSION="0.1.0"
+PROJECT="jeffmanzione_memory_wrapper"
+VERSION="0.0.0"
 
 git archive \
     --format=zip \
