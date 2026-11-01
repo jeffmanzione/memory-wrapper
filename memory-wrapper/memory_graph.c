@@ -146,6 +146,14 @@ void mgraph_dec(MGraph *mg, Node *parent, Node *child) {
     exit(1);
   }
   c2p->ref_count--;
+  // Drops the edge once unused, so the maps of long-lived nodes do not keep an
+  // entry for every node that ever referenced them.
+  if (0 == p2c->ref_count) {
+    NodeEdgeMap_remove(&parent->children, child, sizeof(Node *), NULL);
+    edge_delete_(mg, p2c);
+    NodeEdgeMap_remove(&child->parents, parent, sizeof(Node *), NULL);
+    edge_delete_(mg, c2p);
+  }
 }
 
 void process_node_(Node *node, NodeSet *marked) {
@@ -175,7 +183,31 @@ uint32_t mgraph_collect_garbage(MGraph *mg) {
   for (; NodeSet_has_next(&root_iter); NodeSet_next(&root_iter)) {
     process_node_(*NodeSet_mutable_value(&root_iter), &marked);
   }
+  // Removes the nodes about to be deleted from the parents of the nodes that
+  // remain, which would otherwise keep pointing to them. Their other neighbors
+  // are all deleted too, since a remaining node referencing one would have
+  // kept it.
   NodeSetIterator node_iter;
+  NodeSet_iterator(&node_iter, &mg->nodes);
+  for (; NodeSet_has_next(&node_iter); NodeSet_next(&node_iter)) {
+    Node *node = *NodeSet_mutable_value(&node_iter);
+    if (NodeSet_contains(&marked, node, sizeof(Node *))) {
+      continue;
+    }
+    NodeEdgeMapIterator child_iter;
+    NodeEdgeMap_iterator(&child_iter, &node->children);
+    for (; NodeEdgeMap_has_entry(&child_iter);
+         NodeEdgeMap_next_entry(&child_iter)) {
+      Node *child = (Node *)NodeEdgeMap_key(&child_iter);
+      if (!NodeSet_contains(&marked, child, sizeof(Node *))) {
+        continue;
+      }
+      Edge_ *c2p = NULL;
+      if (NodeEdgeMap_remove(&child->parents, node, sizeof(Node *), &c2p)) {
+        edge_delete_(mg, c2p);
+      }
+    }
+  }
   NodeSet_iterator(&node_iter, &mg->nodes);
   for (; NodeSet_has_next(&node_iter); NodeSet_next(&node_iter)) {
     Node *node = *NodeSet_mutable_value(&node_iter);
